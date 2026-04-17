@@ -304,7 +304,7 @@ def _(mo, tab_cv, tab_data_content, tab_personal):
         })
 
     # Display the final app
-    mo.md(
+  mo.md(
     """
 # Sultan Almahmoud
 
@@ -339,3 +339,4 @@ Relevant modules:
 My long-term goal is to build a successful career in finance, investment management, or financial analysis.
 """
 )
+
