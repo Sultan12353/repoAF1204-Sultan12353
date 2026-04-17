@@ -305,13 +305,37 @@ def _(mo, tab_cv, tab_data_content, tab_personal):
 
     # Display the final app
     mo.md(
-        f"""
-        # **Jane Doe** 
-        ---
-        {app_tabs}
-        """)
-    return
+    """
+# Sultan Almahmoud
 
+BSc Accounting and Finance student at Bayes Business School with a strong interest in investment management, financial markets, and data analysis.
 
-if __name__ == "__main__":
-    app.run()
+I have developed analytical and commercial skills through both academic study and practical experience in a family investment business. My experience has included financial analysis, market research, updating Excel dashboards, and preparing financial summaries.
+
+## Education
+
+### Bayes Business School, City, University of London
+BSc Accounting and Finance (2025–2028)
+
+Relevant modules:
+- Introductory Financial Accounting
+- Introduction to Finance
+- Business Research Methods
+
+## Skills
+- Python
+- Data Visualisation
+- Financial Modelling
+- Microsoft Excel
+- Power Query
+- Data Cleaning
+- Financial Statement Analysis
+- GitHub
+- Marimo
+- Plotly
+
+## Career Goals
+
+My long-term goal is to build a successful career in finance, investment management, or financial analysis.
+"""
+)
