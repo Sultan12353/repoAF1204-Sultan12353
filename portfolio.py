@@ -252,20 +252,31 @@ def _(cap_slider, chart_element, fig_travel, mo, sector_dropdown):
     # Using standard Markdown for formatting
     tab_cv = mo.md(
         """
-        ### Aspiring Financial Analyst | Data Science Enthusiast
+        ### Aspiring Finance Professional | Passionate About Markets and Data Analysis
 
         **Summary:**
-        - Passionate about uncovering market insights using modern data tools like Python, Marimo, and Plotly. 
-        - Eager to apply analytical skills to real-world financial challenges.
+        Strong interest in investment management, financial markets, and financial analysis.
+Experienced in market research, financial summaries, Excel-based data handling, and supporting investment decisions through practical exposure in a family investment business.
+Analytical, detail-oriented, and eager to apply financial and research skills to real-world business and investment challenges.
 
         **Education:**
-        *   **BSc Accounting & Finance**, Bayes Business School (2025 - Present)
-        *   *Relevant Modules:* Introduction to Data Science and AI Tools, Financial Accounting.
+        BSc Accounting and Finance, Bayes Business School, City, University of London (2025 – 2028)
+
+Relevant Modules:
+- Introductory Financial Accounting
+- Introduction to Finance
+- Business Research Methods
 
         **Skills:**
-        *   🐍 Python Programming
-        *   📊 Data Visualization
-        *   📉 Financial Modeling
+📊 Financial Analysis  
+📈 Market Research  
+💻 Microsoft Excel  
+📑 Financial Statement Analysis  
+📊 Data Visualisation  
+🐍 Python Programming  
+🧮 Financial Modelling  
+📂 Data Cleaning  
+🤝 Communication and Teamwork
         """
         )
 
