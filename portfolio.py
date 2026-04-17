@@ -296,24 +296,17 @@ def _(cap_slider, chart_element, fig_travel, mo, sector_dropdown):
 def _(mo, tab_cv, tab_data_content, tab_personal):
     # 6: Assemble and display the multi-tab webpage
 
-    # Create the clickable menu of tabs and assign contents defined above to each tab
     app_tabs = mo.ui.tabs({
         "📄 About Me": tab_cv,
-        "📊 Passion Projects": tab_data_content, 
+        "📊 Passion Projects": tab_data_content,
         "✈️ Personal Interests": tab_personal
-        })
+    })
 
-    # Display the final app
-  mo.md(
-    f"""
+    mo.md(
+        f"""
 # **Sultan Almahmoud**
-
-BSc Accounting and Finance student at Bayes Business School with a strong interest in investment management, financial markets, and data analysis.
-
-I have developed analytical and commercial skills through both academic study and practical experience in a family investment business.
-
----
 
 {app_tabs}
 """
-)
+    )
+    return
