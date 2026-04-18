@@ -241,35 +241,41 @@ def _(cap_slider, chart_element, fig_travel, mo, sector_dropdown):
     # --- Tab 1: CV / Profile ---
     # Using standard Markdown for formatting
    tab_cv = mo.md(
-        """
-        **Summary:**
-        Strong interest in 
-        - Investment management, 
-        - Financial markets, and 
-        - Financial analysis.
-Experienced in market research, financial summaries, Excel-based data handling, and supporting investment decisions through practical exposure in a family investment business.
-Analytical, detail-oriented, and eager to apply financial and research skills to real-world business and investment challenges.
-        **Education:**
-        BSc Accounting and Finance, Bayes Business School, 
-        City, University of London (2025 – 2028)
+    """
+    **Summary:**
 
-Relevant Modules:
-- Introductory Financial Accounting
-- Introduction to Finance
-- Business Research Methods
+    Strong interest in:
 
-        **Skills:**
-📊 Financial Analysis  
-📈 Market Research  
-💻 Microsoft Excel  
-📑 Financial Statement Analysis  
-📊 Data Visualisation  
-🐍 Python Programming  
-🧮 Financial Modelling  
-📂 Data Cleaning  
-🤝 Communication and Teamwork
-        """
-        )
+    - Investment management
+    - Financial markets
+    - Financial analysis
+
+    Experienced in market research, financial summaries, Excel-based data handling, and supporting investment decisions through practical exposure in a family investment business.
+
+    Analytical, detail-oriented, and eager to apply financial and research skills to real-world business and investment challenges.
+
+    **Education:**
+
+    BSc Accounting and Finance, Bayes Business School, City, University of London (2025 – 2028)
+
+    Relevant Modules:
+    - Introductory Financial Accounting
+    - Introduction to Finance
+    - Business Research Methods
+
+    **Skills:**
+
+    - 📊 Financial Analysis
+    - 📈 Market Research
+    - 💻 Microsoft Excel
+    - 📑 Financial Statement Analysis
+    - 📊 Data Visualisation
+    - 🐍 Python Programming
+    - 🧮 Financial Modelling
+    - 📂 Data Cleaning
+    - 🤝 Communication and Teamwork
+    """
+)
 
 
     # --- Tab 2: The Interactive Analysis (Inputs + Plot) ---
