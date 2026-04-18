@@ -250,11 +250,9 @@ def _(cap_slider, chart_element, fig_travel, mo, sector_dropdown):
 Experienced in market research, financial summaries, Excel-based data handling, and supporting investment decisions through practical exposure in a family investment business.
 Analytical, detail-oriented, and eager to apply financial and research skills to real-world business and investment challenges.
 
-       f"""
-**Education:**
-BSc Accounting and Finance, Bayes Business School,
-City, University of London (2025 – 2028)
-"""
+       **Education:**
+        BSc Accounting and Finance, Bayes Business School, 
+        City, University of London (2025 – 2028)
 
 Relevant Modules:
 - Introductory Financial Accounting
