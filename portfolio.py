@@ -243,7 +243,7 @@ def _(cap_slider, chart_element, fig_travel, mo, sector_dropdown):
     tab_cv = mo.md(
         """
         **Summary:**
-        Strong interest in 
+        Strong interest in: 
         - Investment management, 
         - Financial markets, and 
         - Financial analysis.
