@@ -16,6 +16,16 @@ app = marimo.App()
 
 
 @app.cell
+def _(mo):
+    mo.md(r"""
+    ---
+    ## 🎓 Personal Portfolio Webpage
+    Combine everything learned so far (e.g., data loading, preparation, and visualization) into a multi-tabbed webpage featuring interactive chart and dashboard
+    """)
+    return
+
+
+@app.cell
 def _():
 
     import marimo as mo
@@ -242,33 +252,20 @@ def _(cap_slider, chart_element, fig_travel, mo, sector_dropdown):
     # Using standard Markdown for formatting
     tab_cv = mo.md(
         """
+        ### Aspiring Financial Analyst | Data Science Enthusiast
+
         **Summary:**
-        Strong interest in 
-        - Investment management, 
-        - Financial markets, and 
-        - Financial analysis.
-Experienced in market research, financial summaries, Excel-based data handling, and supporting investment decisions through practical exposure in a family investment business.
-Analytical, detail-oriented, and eager to apply financial and research skills to real-world business and investment challenges.
+        - Passionate about uncovering market insights using modern data tools like Python, Marimo, and Plotly. 
+        - Eager to apply analytical skills to real-world financial challenges.
 
-       **Education:**
-        BSc Accounting and Finance, Bayes Business School, 
-        City, University of London (2025 – 2028)
-
-Relevant Modules:
-- Introductory Financial Accounting
-- Introduction to Finance
-- Business Research Methods
+        **Education:**
+        *   **BSc Accounting & Finance**, Bayes Business School (2025 - Present)
+        *   *Relevant Modules:* Introduction to Data Science and AI Tools, Financial Accounting.
 
         **Skills:**
-📊 Financial Analysis  
-📈 Market Research  
-💻 Microsoft Excel  
-📑 Financial Statement Analysis  
-📊 Data Visualisation  
-🐍 Python Programming  
-🧮 Financial Modelling  
-📂 Data Cleaning  
-🤝 Communication and Teamwork
+        *   🐍 Python Programming
+        *   📊 Data Visualization
+        *   📉 Financial Modeling
         """
         )
 
@@ -299,17 +296,22 @@ Relevant Modules:
 def _(mo, tab_cv, tab_data_content, tab_personal):
     # 6: Assemble and display the multi-tab webpage
 
+    # Create the clickable menu of tabs and assign contents defined above to each tab
     app_tabs = mo.ui.tabs({
         "📄 About Me": tab_cv,
-        "📊 Passion Projects": tab_data_content,
+        "📊 Passion Projects": tab_data_content, 
         "✈️ Personal Interests": tab_personal
-    })
+        })
 
+    # Display the final app
     mo.md(
         f"""
-# **Sultan Almahmoud**
-
-{app_tabs}
-"""
-    )
+        # **Jane Doe** 
+        ---
+        {app_tabs}
+        """)
     return
+
+
+if __name__ == "__main__":
+    app.run()
