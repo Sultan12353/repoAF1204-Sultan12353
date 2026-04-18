@@ -92,28 +92,16 @@ def _(count, filtered_portfolio, mo, pd):
     )
 
     fig_portfolio.add_vline(x=1.81, line_dash="dash", line_color="red",
-        annotation=dict(
-            text="Distress Threshold (Z-Score = 1.81)",
-            font=dict(color="red"),
-            x=1.5, xref="x",
-            y=1.07, yref="paper",
-            showarrow=False,
-            yanchor="top"
-        )
+        annotation_text="Distress Threshold (Z-Score = 1.81)",
+        annotation_font_color="red",
+        annotation_position="top"
     )
 
     fig_portfolio.add_vline(x=2.99, line_dash="dash", line_color="green",
-        annotation=dict(
-            text="Safe Threshold (Z-Score = 2.99)",
-            font=dict(color="green"),
-            x=3.10, xref="x",
-            y=1.02, yref="paper",
-            showarrow=False,
-            yanchor="top"
-        )
+        annotation_text="Safe Threshold (Z-Score = 2.99)",
+        annotation_font_color="green",
+        annotation_position="top"
     )
-
-    chart_element = mo.ui.plotly(fig_portfolio)
 
     # Plot 2: Travel Map
     travel_data = pd.DataFrame({
@@ -137,12 +125,14 @@ def _(count, filtered_portfolio, mo, pd):
         labels={'Visit_Year_str': 'Visit Year'}
     )
 
-    fig_travel.update_traces(marker=dict(size=12));
-    return chart_element, fig_travel
+    fig_travel.update_traces(marker=dict(size=12))
+    fig_travel.update_layout(width=800, height=500)
+    
+    return fig_portfolio, fig_travel
 
 
 @app.cell
-def _(cap_slider, chart_element, fig_travel, mo, sector_dropdown):
+def _(cap_slider, fig_portfolio, fig_travel, mo, sector_dropdown):
     # 5: Layout
 
     tab_cv = mo.md(
@@ -186,13 +176,13 @@ def _(cap_slider, chart_element, fig_travel, mo, sector_dropdown):
         mo.md("## 📊 Interactive Credit Risk Analyzer"),
         mo.callout(mo.md("Use the filters below to explore the relationship between Borrowing Costs and Credit Risk."), kind="info"),
         mo.hstack([sector_dropdown, cap_slider], justify="center", gap=2),
-        chart_element
+        mo.plotly(fig_portfolio)  # Changed: display the figure directly, not as a UI element
     ])
 
     tab_personal = mo.vstack([
         mo.md("## 🌍 My Hobbies: Travel & Photography"),
         mo.md("When I'm not analyzing company financials, I love exploring the world."),
-        mo.ui.plotly(fig_travel)
+        mo.plotly(fig_travel)  # Changed: display the figure directly
     ])
     return tab_cv, tab_data_content, tab_personal
 
@@ -214,4 +204,3 @@ def _(mo, tab_cv, tab_data_content, tab_personal):
 {app_tabs}
 """
     )
-    return
