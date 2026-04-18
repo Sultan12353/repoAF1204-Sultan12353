@@ -247,6 +247,7 @@ def _(cap_slider, chart_element, fig_travel, mo, sector_dropdown):
         - Investment management, 
         - Financial markets, and 
         - Financial analysis.
+        """
 Experienced in market research, financial summaries, Excel-based data handling, and supporting investment decisions through practical exposure in a family investment business.
 Analytical, detail-oriented, and eager to apply financial and research skills to real-world business and investment challenges.
 
