@@ -241,18 +241,14 @@ def _(cap_slider, chart_element, fig_travel, mo, sector_dropdown):
     # --- Tab 1: CV / Profile ---
     # Using standard Markdown for formatting
    tab_cv = mo.md(
-    """
-    **Summary:**
-
-    - Investment management
-    - Financial markets
-    - Financial analysis
-
-    Experienced in market research, financial summaries, Excel-based data handling, and supporting investment decisions through practical exposure in a family investment business.
-
-    Analytical, detail-oriented, and eager to apply financial and research skills to real-world business and investment challenges.
-    """
-)
+        """
+        **Summary:**
+        Strong interest in 
+        - Investment management, 
+        - Financial markets, and 
+        - Financial analysis.
+Experienced in market research, financial summaries, Excel-based data handling, and supporting investment decisions through practical exposure in a family investment business.
+Analytical, detail-oriented, and eager to apply financial and research skills to real-world business and investment challenges.
 
         **Education:**
         BSc Accounting and Finance, Bayes Business School, 
