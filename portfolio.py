@@ -15,14 +15,7 @@ __generated_with = "0.19.11"
 app = marimo.App()
 
 
-@app.cell
-def _(mo):
-    mo.md(r"""
-    ---
-    ## 🎓 Personal Portfolio Webpage
-    Combine everything learned so far (e.g., data loading, preparation, and visualization) into a multi-tabbed webpage featuring interactive chart and dashboard
-    """)
-    return
+
 
 
 @app.cell
@@ -252,8 +245,6 @@ def _(cap_slider, chart_element, fig_travel, mo, sector_dropdown):
     # Using standard Markdown for formatting
     tab_cv = mo.md(
         """
-        ### Aspiring Finance Professional | Passionate About Markets and Data Analysis
-
         **Summary:**
         Strong interest in investment management, financial markets, and financial analysis.
 Experienced in market research, financial summaries, Excel-based data handling, and supporting investment decisions through practical exposure in a family investment business.
