@@ -15,9 +15,6 @@ __generated_with = "0.19.11"
 app = marimo.App()
 
 
-
-
-
 @app.cell
 def _():
 
@@ -246,12 +243,16 @@ def _(cap_slider, chart_element, fig_travel, mo, sector_dropdown):
     tab_cv = mo.md(
         """
         **Summary:**
-        Strong interest in investment management, financial markets, and financial analysis.
+        Strong interest in 
+        Investment management, 
+        Financial markets, and 
+        Financial analysis.
 Experienced in market research, financial summaries, Excel-based data handling, and supporting investment decisions through practical exposure in a family investment business.
 Analytical, detail-oriented, and eager to apply financial and research skills to real-world business and investment challenges.
 
         **Education:**
-        BSc Accounting and Finance, Bayes Business School, City, University of London (2025 – 2028)
+        BSc Accounting and Finance, Bayes Business School, 
+        City, University of London (2025 – 2028)
 
 Relevant Modules:
 - Introductory Financial Accounting
