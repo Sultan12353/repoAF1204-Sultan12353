@@ -20,6 +20,7 @@ def _():
     import marimo as mo
     import pandas as pd
     import micropip
+
     return mo, pd, micropip
 
 
@@ -28,7 +29,9 @@ def _(pd):
     csv_url = "https://gist.githubusercontent.com/DrAYim/80393243abdbb4bfe3b45fef58e8d3c8/raw/ed5cfd9f210bf80cb59a5f420bf8f2b88a9c2dcd/sp500_ZScore_AvgCostofDebt.csv"
 
     df_final = pd.read_csv(csv_url)
-    df_final = df_final.dropna(subset=["AvgCost_of_Debt", "Z_Score_lag", "Sector_Key", "Market_Cap"])
+    df_final = df_final.dropna(
+        subset=["AvgCost_of_Debt", "Z_Score_lag", "Sector_Key", "Market_Cap"]
+    )
     df_final = df_final[df_final["AvgCost_of_Debt"] < 5]
     df_final["Debt_Cost_Percent"] = df_final["AvgCost_of_Debt"] * 100
     df_final["Market_Cap_B"] = df_final["Market_Cap"] / 1e9
@@ -87,11 +90,12 @@ def _(df_final, metric_dropdown, metric_options, top_n_slider):
 async def _(micropip):
     await micropip.install("plotly")
     import plotly.express as px
+
     return (px,)
 
 
 @app.cell
-def _(mo, pd, px, sector_summary, metric_dropdown, selected_col):
+def _(mo, px, sector_summary, metric_dropdown, selected_col):
     fig_sector = px.bar(
         sector_summary,
         x="Sector_Key",
@@ -110,35 +114,96 @@ def _(mo, pd, px, sector_summary, metric_dropdown, selected_col):
     fig_sector.update_layout(showlegend=False)
     chart_element = mo.ui.plotly(fig_sector)
 
-    travel_data = pd.DataFrame({
-        "City": ["London", "New York", "Tokyo", "Sydney", "Paris"],
-        "Lat": [51.5, 40.7, 35.6, -33.8, 48.8],
-        "Lon": [-0.1, -74.0, 139.6, 151.2, 2.3],
-        "Visit_Year_str": ["2022", "2023", "2024", "2021", "2023"],
-    })
-
-    years = sorted(travel_data["Visit_Year_str"].unique(), key=int)
-
-    fig_travel = px.scatter_geo(
-        travel_data,
-        lat="Lat",
-        lon="Lon",
-        hover_name="City",
-        color="Visit_Year_str",
-        category_orders={"Visit_Year_str": years},
-        color_discrete_sequence=px.colors.qualitative.Plotly,
-        projection="natural earth",
-        title="My Travel Footprint",
-        labels={"Visit_Year_str": "Visit Year"},
-    )
-
-    fig_travel.update_traces(marker=dict(size=12))
-
-    return chart_element, fig_travel
+    return (chart_element,)
 
 
 @app.cell
-def _(chart_element, fig_travel, metric_dropdown, mo, top_n_slider):
+def _(mo, pd):
+    reading_data = pd.DataFrame({
+        "Title": [
+            "Atomic Habits",
+            "The Psychology of Money",
+            "Deep Work",
+            "Shoe Dog",
+            "Rich Dad Poor Dad",
+            "Ikigai",
+        ],
+        "Genre": [
+            "Self-Development",
+            "Finance",
+            "Productivity",
+            "Biography",
+            "Finance",
+            "Self-Development",
+        ],
+        "Rating": [5, 5, 4, 5, 4, 4],
+        "Year_Read": [2024, 2024, 2023, 2023, 2022, 2022],
+    })
+
+    genre_options = ["All"] + sorted(reading_data["Genre"].unique().tolist())
+
+    genre_dropdown = mo.ui.dropdown(
+        options=genre_options,
+        value="All",
+        label="Choose genre",
+    )
+
+    return genre_dropdown, reading_data
+
+
+@app.cell
+def _(genre_dropdown, reading_data):
+    if genre_dropdown.value == "All":
+        filtered_books = reading_data
+    else:
+        filtered_books = reading_data[reading_data["Genre"] == genre_dropdown.value]
+
+    books_by_genre = (
+        filtered_books.groupby("Genre", as_index=False)
+        .size()
+        .rename(columns={"size": "Books_Read"})
+    )
+
+    favorite_titles = filtered_books[["Title", "Genre", "Rating", "Year_Read"]].sort_values(
+        by=["Rating", "Year_Read"],
+        ascending=[False, False],
+    )
+
+    return books_by_genre, favorite_titles, filtered_books
+
+
+@app.cell
+def _(books_by_genre, favorite_titles, genre_dropdown, mo, px):
+    fig_reading = px.bar(
+        books_by_genre,
+        x="Genre",
+        y="Books_Read",
+        color="Genre",
+        title=f"Books Read by Genre: {genre_dropdown.value}",
+        labels={"Genre": "Genre", "Books_Read": "Number of Books"},
+        template="presentation",
+        width=900,
+        height=500,
+    )
+
+    fig_reading.update_layout(showlegend=False)
+    reading_chart = mo.ui.plotly(fig_reading)
+
+    favorites_table = mo.ui.table(favorite_titles)
+
+    return favorites_table, reading_chart
+
+
+@app.cell
+def _(
+    chart_element,
+    favorites_table,
+    genre_dropdown,
+    mo,
+    reading_chart,
+    top_n_slider,
+    metric_dropdown,
+):
     tab_cv = mo.md(
         """
         **Summary:**
@@ -168,9 +233,12 @@ def _(chart_element, fig_travel, metric_dropdown, mo, top_n_slider):
     ])
 
     tab_personal = mo.vstack([
-        mo.md("## My Hobbies: Travel & Photography"),
-        mo.md("When I'm not analyzing company financials, I love exploring the world."),
-        mo.ui.plotly(fig_travel),
+        mo.md("## My Hobbies: Reading"),
+        mo.md("I enjoy reading books on finance, productivity, and self-development."),
+        genre_dropdown,
+        reading_chart,
+        mo.md("### Favorite Titles"),
+        favorites_table,
     ])
 
     return tab_cv, tab_data_content, tab_personal
