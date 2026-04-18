@@ -17,292 +17,171 @@ app = marimo.App()
 
 @app.cell
 def _():
-
     import marimo as mo
     import pandas as pd
-
-    # Require micropip to install packages in the WASM environment
     import micropip
-
-    return micropip, mo, pd
+    return mo, pd, micropip
 
 
 @app.cell
 def _(pd):
-    # 1: Setup & Data Prep
-
-    # Get data ready for the dynamic webpage
-
-    # Note: The local-data-loading approach below does not work due to GitHub Pages compression issue
-    #===============================================================================================
-    # Must place data file in subfolder 'public' of the folder where the marimo notebook is located
-    # (required to locate and include the data when exporting as html-wasm)
-    # 
-    #filename = mo.notebook_location() / "public" / 'sp500_ZScore_AvgCostofDebt.csv'
-    #df_final = pd.read_csv(str(filename))
-
-    # Instead, use a raw gist URL approach to remotely load the data (already hosted online)  
-    #=======================================================================================
     csv_url = "https://gist.githubusercontent.com/DrAYim/80393243abdbb4bfe3b45fef58e8d3c8/raw/ed5cfd9f210bf80cb59a5f420bf8f2b88a9c2dcd/sp500_ZScore_AvgCostofDebt.csv"
 
-    df_final = pd.read_csv(csv_url)  # as opposed to pd.read_csv('public/sp500_ZScore_AvgCostofDebt.csv')
+    df_final = pd.read_csv(csv_url)
+    df_final = df_final.dropna(subset=["AvgCost_of_Debt", "Z_Score_lag", "Sector_Key", "Market_Cap"])
+    df_final = df_final[df_final["AvgCost_of_Debt"] < 5]
+    df_final["Debt_Cost_Percent"] = df_final["AvgCost_of_Debt"] * 100
+    df_final["Market_Cap_B"] = df_final["Market_Cap"] / 1e9
 
-    df_final = df_final.dropna(subset=['AvgCost_of_Debt', 'Z_Score_lag', 'Sector_Key'])
-    # Filter outliers to reduce distortion in visualizations
-    df_final = df_final[(df_final['AvgCost_of_Debt'] < 5)]   # 5 means 500%
-    #df_final = df_final[(df_final['AvgCost_of_Debt'] > 0) & (df_final['Z_Score_lag'] < 20)]
-    df_final['Debt_Cost_Percent'] = df_final['AvgCost_of_Debt'] * 100
     return (df_final,)
 
 
 @app.cell
 def _(df_final, mo):
-    # 2: Define the UI Controls (The "Inputs")
+    metric_options = {
+        "Average Cost of Debt (%)": "Debt_Cost_Percent",
+        "Average Z-Score": "Z_Score_lag",
+        "Average Market Cap ($ Billions)": "Market_Cap_B",
+        "Number of Companies": "Company_Count",
+    }
 
-    # create the widgets here. In marimo, assigning them to a variable makes them available globally.
+    metric_dropdown = mo.ui.dropdown(
+        options=list(metric_options.keys()),
+        value="Average Cost of Debt (%)",
+        label="Choose metric",
+    )
 
-    # 1. A Dropdown to select Sectors
-    all_sectors = sorted(df_final['Sector_Key'].unique().tolist())
-    sector_dropdown = mo.ui.multiselect(
-        options=all_sectors,
-        value=all_sectors[:3], # Default to first 3
-        label="Filter by Sector",
-        )
+    top_n_slider = mo.ui.slider(
+        start=3,
+        stop=11,
+        step=1,
+        value=8,
+        label="Number of sectors to show",
+    )
 
-    # 2. A Slider for Market Cap (Size of company)
-    # Convert Market Cap to Billions for easier reading
-    df_final['Market_Cap_B'] = df_final['Market_Cap'] / 1e9
-    max_cap = int(df_final['Market_Cap_B'].max())
-
-    cap_slider = mo.ui.slider(
-        start=0, 
-        stop=200,   # int(0.05*max_cap), 
-        step=10, 
-        value=0, # initial value
-        label="Min Market Cap ($ Billions)"
-        )
-    return cap_slider, sector_dropdown
+    return metric_dropdown, metric_options, top_n_slider
 
 
 @app.cell
-def _(cap_slider, df_final, sector_dropdown):
-    # 3: The Filter Logic (Reactive Data)
+def _(df_final, metric_dropdown, metric_options, top_n_slider):
+    sector_summary = (
+        df_final.groupby("Sector_Key", as_index=False)
+        .agg(
+            Debt_Cost_Percent=("Debt_Cost_Percent", "mean"),
+            Z_Score_lag=("Z_Score_lag", "mean"),
+            Market_Cap_B=("Market_Cap_B", "mean"),
+            Company_Count=("Name", "count"),
+        )
+    )
 
-    # This cell re-runs automatically when the user changes the slider or dropdown
+    selected_col = metric_options[metric_dropdown.value]
+    sector_summary = sector_summary.sort_values(
+        by=selected_col,
+        ascending=False,
+    ).head(top_n_slider.value)
 
-    # Filter the dataframe based on the UI inputs
-    filtered_portfolio = df_final[
-        (df_final['Sector_Key'].isin(sector_dropdown.value)) &
-        (df_final['Market_Cap_B'] >= cap_slider.value)
-        ]
-
-    # Calculate a quick summary metric
-    count = len(filtered_portfolio)
-    return count, filtered_portfolio
+    return sector_summary, selected_col
 
 
 @app.cell
 async def _(micropip):
-    # Await installation of plotly in the WASM environment
-    await micropip.install('plotly');
-
-    # What does await do here? 
-    # It pauses execution of the code until the package is installed, 
-    # considering that installing a package is an asynchronous operation 
-    # (which means taking some time to complete)
-
+    await micropip.install("plotly")
     import plotly.express as px
-
     return (px,)
 
 
 @app.cell
-def _(count, filtered_portfolio, mo, pd, px):
-    # 4: The Visualizations
-
-    # Create the plots based on the filtered data.
-
-    #=========================================
-    # Plot 1: The Financial Analysis (Scatter)
-    #=========================================
-    fig_portfolio = px.scatter(
-        filtered_portfolio,
-        x='Z_Score_lag', 
-        y='Debt_Cost_Percent',
-        color='Sector_Key',
-        size='Market_Cap_B',
-        hover_name='Name',
-        title=f"Cost of Debt vs. Z-Score ({count} observations)",
-        labels={'Z_Score_lag': 'Altman Z-Score (lagged)', 'Debt_Cost_Percent': 'Avg. Cost of Debt (%)'},
-        # template='presentation' gives a clean look with larger fonts
-        template='presentation',    # 'presentation' # plotly_white  # 'plotly' (default) 
+def _(mo, pd, px, sector_summary, metric_dropdown, selected_col):
+    fig_sector = px.bar(
+        sector_summary,
+        x="Sector_Key",
+        y=selected_col,
+        color="Sector_Key",
+        title=f"Sectors Ranked by {metric_dropdown.value}",
+        labels={
+            "Sector_Key": "Sector",
+            selected_col: metric_dropdown.value,
+        },
+        template="presentation",
         width=900,
-        height=600
-        )
+        height=600,
+    )
 
-    # Add a vertical line for the "Distress" threshold (1.81)
-    fig_portfolio.add_vline(x=1.81, line_dash="dash", line_color="red", 
-        annotation=dict(
-            text="Distress Threshold (Z-Score = 1.81)",
-            font=dict(color="red"),
-            x=1.5, xref="x",
-            # x is interpreted in the x-axis data coordinates (or category label)
-            y=1.07, yref="paper",
-            # y is interpreted as a fraction of the plotting area (0 = bottom, 1 = top).
-            showarrow=False,
-            yanchor="top"
-            ) 
-        )
+    fig_sector.update_layout(showlegend=False)
+    chart_element = mo.ui.plotly(fig_sector)
 
-    # Add a vertical line for the "Safe" threshold (2.99)
-    fig_portfolio.add_vline(x=2.99, line_dash="dash", line_color="green", 
-        annotation=dict(
-            text="Safe Threshold (Z-Score = 2.99)",
-            font=dict(color="green"),
-            x=3.10, xref="x",
-            y=1.02, yref="paper",
-            showarrow=False,
-            yanchor="top"
-            ) 
-        )
-
-
-    # #==============================================
-    # # Calculate regression line points
-    # import numpy as np
-    # # use the same dataframe used for the scatter (filtered_portfolio) and plotted y (Debt_Cost_Percent)
-    # #   after filtering out extreme outliers (with Debt_Cost_Percent >= 5, i.e., 500%)
-    # df_regline = filtered_portfolio[
-    #    (filtered_portfolio['Debt_Cost_Percent'] < 5) # Assuming decimal format (0.15 = 15%)
-    #    ]
-    # 
-    # # Only calculate regression if there are data points
-    # if not df_regline.empty:
-    #     x = df_regline['Z_Score_lag'].astype(float)
-    #     y = df_regline['Debt_Cost_Percent'].astype(float)
-
-    #     # get slope & intercept of the regression line
-    #     slope, intercept = np.polyfit(x, y, 1)
-
-    #     # create x-range for a smooth line
-    #     x_line = np.linspace(x.min(), x.max(), 100)
-    #     y_line = intercept + slope * x_line
-
-    #     # add regression line to existing fig
-    #     line_trace = px.line(x=x_line, y=y_line#, labels={'x':'Z_Score_lag','y':'Debt_Cost_Percent'}
-    #     ).data[0]
-    #     line_trace.update(line=dict(width=0.5, color='black'))
-
-    #     fig_portfolio.add_trace(line_trace)
-    # #==============================================
-
-    # Wrap the plot in a marimo UI element
-    chart_element = mo.ui.plotly(fig_portfolio)
-
-
-    #=========================================
-    # Plot 2: Personal Travel Map (Hardcoded demo data for the 'Hobbies' tab)
-    #=========================================
-    # This simulates travel history data  
     travel_data = pd.DataFrame({
-        'City': ['London', 'New York', 'Tokyo', 'Sydney', 'Paris'],
-        'Lat': [51.5, 40.7, 35.6, -33.8, 48.8],
-        'Lon': [-0.1, -74.0, 139.6, 151.2, 2.3],
-        'Visit_Year_str': ['2022', '2023', '2024', '2021', '2023']
+        "City": ["London", "New York", "Tokyo", "Sydney", "Paris"],
+        "Lat": [51.5, 40.7, 35.6, -33.8, 48.8],
+        "Lon": [-0.1, -74.0, 139.6, 151.2, 2.3],
+        "Visit_Year_str": ["2022", "2023", "2024", "2021", "2023"],
     })
 
-    years = sorted(travel_data['Visit_Year_str'].unique(), key=int)  # -> ['2021','2022','2023','2024']
+    years = sorted(travel_data["Visit_Year_str"].unique(), key=int)
 
     fig_travel = px.scatter_geo(
         travel_data,
-        lat='Lat', lon='Lon',
-        hover_name='City',
-        color='Visit_Year_str',
-        category_orders={'Visit_Year_str': years},
+        lat="Lat",
+        lon="Lon",
+        hover_name="City",
+        color="Visit_Year_str",
+        category_orders={"Visit_Year_str": years},
         color_discrete_sequence=px.colors.qualitative.Plotly,
         projection="natural earth",
         title="My Travel Footprint",
-        #template='plotly_white',
-        labels={'Visit_Year_str': 'Visit Year'}
+        labels={"Visit_Year_str": "Visit Year"},
     )
 
-    fig_travel.update_traces(marker=dict(size=12)); # use trailing semicolon to suppress output
+    fig_travel.update_traces(marker=dict(size=12))
+
     return chart_element, fig_travel
 
 
 @app.cell
-def _(cap_slider, chart_element, fig_travel, mo, sector_dropdown):
-    # 5: The "Portfolio" Layout (a Multi-Tab Webpage)
-
-    # Combine everything into a polished, tabbed interface using Markdown and mo.ui.tabs.
-
-    # Define the content for each tab
-
-    # --- Tab 1: CV / Profile ---
-    # Using standard Markdown for formatting
+def _(chart_element, fig_travel, metric_dropdown, mo, top_n_slider):
     tab_cv = mo.md(
         """
         **Summary:**
-        Strong interest in: 
-        - Investment management, 
-        - Financial markets, and 
-        - Financial analysis.
-Experienced in market research, financial summaries, Excel-based data handling, and supporting investment decisions through practical exposure in a family investment business.
-Analytical, detail-oriented, and eager to apply financial and research skills to real-world business and investment challenges.
+        Strong interest in finance, markets, and financial analysis.
 
-       **Education:**
-        BSc Accounting and Finance, Bayes Business School, 
-        City, University of London (2025 – 2028)
-
-Relevant Modules:
-- Introductory Financial Accounting
-- Introduction to Finance
-- Business Research Methods
+        **Education:**
+        BSc Accounting and Finance, Bayes Business School,
+        City, University of London (2025 - 2028)
 
         **Skills:**
-📊 Financial Analysis  
-📈 Market Research  
-💻 Microsoft Excel  
-📑 Financial Statement Analysis  
-📊 Data Visualisation  
-🐍 Python Programming  
-🧮 Financial Modelling  
-📂 Data Cleaning  
-🤝 Communication and Teamwork
+        - Financial Analysis
+        - Market Research
+        - Microsoft Excel
+        - Python Programming
+        - Data Visualisation
         """
-        )
+    )
 
-
-    # --- Tab 2: The Interactive Analysis (Inputs + Plot) ---
-    # Vertically stack the inputs and the chart
     tab_data_content = mo.vstack([
-        mo.md("## 📊 Interactive Credit Risk Analyzer"),
-        # create an informational callout box with the instruction text inside
-        mo.callout(mo.md("Use the filters below to explore the relationship between Borrowing Costs and Credit Risk."), kind="info"),
-        # horizontally arrange two UI elements (sector_dropdown and cap_slider) in a row.
-        mo.hstack([sector_dropdown, cap_slider], justify="center", gap=2),
-        chart_element
-        ])
+        mo.md("## Sector Comparison"),
+        mo.callout(
+            mo.md("Use the controls below to compare sectors with a simple ranked bar chart."),
+            kind="info",
+        ),
+        mo.hstack([metric_dropdown, top_n_slider], justify="center", gap=2),
+        chart_element,
+    ])
 
-
-    # --- Tab 3: Hobbies & Interests ---
-    # Combining text and the travel map
     tab_personal = mo.vstack([
-        mo.md("## 🌍 My Hobbies: Travel & Photography"),
+        mo.md("## My Hobbies: Travel & Photography"),
         mo.md("When I'm not analyzing company financials, I love exploring the world."),
-        mo.ui.plotly(fig_travel)
-        ])
+        mo.ui.plotly(fig_travel),
+    ])
+
     return tab_cv, tab_data_content, tab_personal
 
 
 @app.cell
 def _(mo, tab_cv, tab_data_content, tab_personal):
-    # 6: Assemble and display the multi-tab webpage
-
     app_tabs = mo.ui.tabs({
-        "📄 About Me": tab_cv,
-        "📊 Passion Projects": tab_data_content,
-        "✈️ Personal Interests": tab_personal
+        "About Me": tab_cv,
+        "Passion Projects": tab_data_content,
+        "Personal Interests": tab_personal,
     })
 
     mo.md(
@@ -313,3 +192,7 @@ def _(mo, tab_cv, tab_data_content, tab_personal):
 """
     )
     return
+
+
+if __name__ == "__main__":
+    app.run()
